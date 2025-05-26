@@ -1,8 +1,10 @@
 package com.java.bank_rest.entity;
 
 import com.java.bank_rest.util.CardStatus;
+import com.java.bank_rest.util.YearMonthAttributeConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +15,7 @@ import java.time.YearMonth;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
 public class Card {
 
     @Id
@@ -27,6 +30,7 @@ public class Card {
     private String cardNumber;
 
     @Column(name = "expiry", nullable = false)
+    @Convert(converter = YearMonthAttributeConverter.class)
     private YearMonth expiry;
 
     @Enumerated(EnumType.STRING)

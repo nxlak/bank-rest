@@ -19,8 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-//c
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -41,8 +39,28 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // явное разрешение POST /auth/login и /auth/register
                         .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login").permitAll()
+
+                        // разрешаем создание карточки только ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/cards/create").hasRole("ADMIN")
+
+                        // разрешаем PATCH /api/cards/update/{id}/status только ADMIN
+                        .requestMatchers(HttpMethod.PATCH, "/api/cards/update/*/status",
+                                "api/cards/block/*").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "api/cards/delete/*").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "api/cards").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "api/cards/user/*").permitAll()
+
                         // допускаем Swagger UI, если нужно
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/webjars/**"
+                        ).permitAll()
+
                         // остальные запросы требуют аутентификации
                         .anyRequest().authenticated()
                 )

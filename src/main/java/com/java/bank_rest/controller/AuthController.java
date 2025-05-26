@@ -1,8 +1,8 @@
 package com.java.bank_rest.controller;
 
-import com.java.bank_rest.dto.AuthRequest;
-import com.java.bank_rest.dto.AuthResponse;
-import com.java.bank_rest.dto.RegisterRequest;
+import com.java.bank_rest.dto.user.AuthRequest;
+import com.java.bank_rest.dto.user.AuthResponse;
+import com.java.bank_rest.dto.user.RegisterRequest;
 import com.java.bank_rest.entity.User;
 import com.java.bank_rest.repository.UserRepo;
 import com.java.bank_rest.security.JwtUtil;

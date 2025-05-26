@@ -1,17 +1,18 @@
 package com.java.bank_rest.service;
 
-import com.java.bank_rest.repository.CardRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import com.java.bank_rest.dto.card.CardRequest;
+import com.java.bank_rest.dto.card.CardResponse;
+import com.java.bank_rest.util.CardStatus;
+import org.springframework.http.ResponseEntity;
 
-@Service
-public class CardService {
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-    private final CardRepo cardRepo;
-
-    @Autowired
-    public CardService(CardRepo cardRepo) {
-        this.cardRepo = cardRepo;
-    }
-
+public interface CardService {
+    CardResponse createCard(CardRequest cardRequest);
+    CardResponse updateStatus(Long id, String status);
+    CardResponse blockCard(Long id);
+    void deleteCard(Long id);
+    Page<CardResponse> getAllCards(Pageable pageable);
+    Page<CardResponse> getCards(Long userId, Pageable pageable);
 }
