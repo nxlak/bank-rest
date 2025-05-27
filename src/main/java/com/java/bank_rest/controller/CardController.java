@@ -2,6 +2,8 @@ package com.java.bank_rest.controller;
 
 import com.java.bank_rest.dto.card.CardRequest;
 import com.java.bank_rest.dto.card.CardResponse;
+import com.java.bank_rest.dto.transaction.TransactionRequest;
+import com.java.bank_rest.dto.transaction.TransactionResponse;
 import com.java.bank_rest.service.CardService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.Map;
 
 @RestController
@@ -63,11 +65,22 @@ public class CardController {
         return cardService.getAllCards(pageable);
     }
 
-    @GetMapping("/user/{id}")
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasRole('USER')")
     public Page<CardResponse> getCards(@PathVariable Long userId, Pageable pageable) {
         return cardService.getCards(userId, pageable);
     }
 
+    @GetMapping("/balance/{userId}/{cardId}")
+    @PreAuthorize("hasRole('USER')")
+    public BigDecimal showBalance(@PathVariable Long userId, @PathVariable Long cardId) {
+        return cardService.showBalance(userId, cardId);
+    }
 
+    @PostMapping("/transfer/{userId}")
+    @PreAuthorize("hasRole('USER')")
+    public TransactionResponse makeTransaction(@PathVariable Long userId, @RequestBody TransactionRequest transactionRequest) {
+        return cardService.makeTransaction(userId, transactionRequest);
+    }
 
 }

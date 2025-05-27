@@ -2,9 +2,13 @@ package com.java.bank_rest.service;
 
 import com.java.bank_rest.dto.card.CardRequest;
 import com.java.bank_rest.dto.card.CardResponse;
+import com.java.bank_rest.dto.transaction.TransactionRequest;
+import com.java.bank_rest.dto.transaction.TransactionResponse;
 import com.java.bank_rest.entity.Card;
+import com.java.bank_rest.entity.Transaction;
 import com.java.bank_rest.entity.User;
 import com.java.bank_rest.repository.CardRepo;
+import com.java.bank_rest.repository.TransactionRepo;
 import com.java.bank_rest.repository.UserRepo;
 import com.java.bank_rest.util.CardStatus;
 import jakarta.persistence.EntityNotFoundException;
@@ -14,6 +18,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +28,7 @@ public class CardServiceImpl implements CardService {
 
     private final UserRepo userRepo;
     private final CardRepo cardRepo;
+    private final TransactionRepo transactionRepo;
 
     @Override
     public CardResponse createCard(CardRequest cardRequest) {
@@ -81,7 +89,49 @@ public class CardServiceImpl implements CardService {
                 .map(this::convertIntoDto);
     }
 
-    public CardResponse convertIntoDto(Card card) {
+    @Override
+    public BigDecimal showBalance(Long userId, Long cardId) {
+        Card card = loadCardForUser(userId, cardId);
+        return card.getBalance();
+    }
+
+    @Override
+    public TransactionResponse makeTransaction(Long userId, TransactionRequest transactionRequest) {
+        Card from = loadCardForUser(userId, transactionRequest.getFromId());
+        Card to = cardRepo.findById(transactionRequest.getToId()).orElseThrow(() -> new EntityNotFoundException("Card not found"));
+
+        BigDecimal amount = transactionRequest.getAmount();
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return new TransactionResponse("FAILED", "Некорректная сумма перевода");
+        }
+
+        if (from.getBalance().compareTo(amount) < 0) {
+            return new TransactionResponse("FAILED", "Недостаточно средств на карте-отправителе");
+        }
+
+        from.setBalance(from.getBalance().subtract(amount));
+        to.setBalance(to.getBalance().add(amount));
+        cardRepo.save(from);
+        cardRepo.save(to);
+
+        Transaction transaction = Transaction.builder()
+                .fromCard(from)
+                .toCard(to)
+                .amount(amount)
+                .timestamp(LocalDateTime.now())
+                .build();
+        transactionRepo.save(transaction);
+
+        return new TransactionResponse("SUCCESS", "Перевод выполнен успешно");
+    }
+
+    private Card loadCardForUser(Long userId, Long cardId) {
+        return cardRepo.findByIdAndCardUserId(cardId, userId)
+                .orElseThrow(() -> new EntityNotFoundException("Карта не найдена или доступ запрещён"));
+    }
+
+
+    private CardResponse convertIntoDto(Card card) {
         return CardResponse.builder()
                 .cardId(card.getId())
                 .cardNumber(maskCardNumber(card.getCardNumber()))
@@ -90,7 +140,7 @@ public class CardServiceImpl implements CardService {
                 .balance(card.getBalance()).build();
     }
 
-    public static String maskCardNumber(String fullNumber) {
+    private static String maskCardNumber(String fullNumber) {
         String last4 = fullNumber.substring(fullNumber.length() - 4);
         return "**** **** **** " + last4;
     }

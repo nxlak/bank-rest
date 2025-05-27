@@ -37,13 +37,11 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // явное разрешение POST /auth/login и /auth/register
+
                         .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login").permitAll()
 
-                        // разрешаем создание карточки только ADMIN
                         .requestMatchers(HttpMethod.POST, "/api/cards/create").hasRole("ADMIN")
 
-                        // разрешаем PATCH /api/cards/update/{id}/status только ADMIN
                         .requestMatchers(HttpMethod.PATCH, "/api/cards/update/*/status",
                                 "api/cards/block/*").hasRole("ADMIN")
 
@@ -51,9 +49,12 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "api/cards").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.GET, "api/cards/user/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "api/cards/user/*").hasRole("USER")
 
-                        // допускаем Swagger UI, если нужно
+                        .requestMatchers(HttpMethod.GET, "api/cards/balance/*").hasRole("USER")
+
+                        .requestMatchers(HttpMethod.POST, "api/cards/transfer/*").hasRole("USER")
+
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -61,7 +62,6 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
-                        // остальные запросы требуют аутентификации
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
