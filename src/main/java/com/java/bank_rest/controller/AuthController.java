@@ -6,6 +6,7 @@ import com.java.bank_rest.dto.user.RegisterRequest;
 import com.java.bank_rest.entity.User;
 import com.java.bank_rest.repository.UserRepo;
 import com.java.bank_rest.security.JwtUtil;
+import com.java.bank_rest.util.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +35,7 @@ public class AuthController {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
+        user.setStatus(UserStatus.ACTIVE);
         userRepo.save(user);
         return ResponseEntity.ok("User registered");
     }

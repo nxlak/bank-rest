@@ -14,9 +14,10 @@ public interface CardService {
     CardResponse createCard(CardRequest cardRequest);
     CardResponse updateStatus(Long id, String status);
     CardResponse blockCard(Long id);
-    void deleteCard(Long id);
+    void deleteCard(Long userId, Long cardId);
     Page<CardResponse> getAllCards(Pageable pageable);
     Page<CardResponse> getCards(Long userId, Pageable pageable);
     BigDecimal showBalance(Long userId, Long cardId);
     TransactionResponse makeTransaction(Long userId, TransactionRequest transactionRequest);
+    void requestBlock(Long userId, Long cardId);
 }

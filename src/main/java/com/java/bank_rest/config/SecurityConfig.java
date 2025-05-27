@@ -55,6 +55,10 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "api/cards/transfer/*").hasRole("USER")
 
+                        .requestMatchers(HttpMethod.PATCH, "/api/cards/request/*").hasRole("USER")
+
+                        .requestMatchers(HttpMethod.PATCH, "/user/block/*").hasRole("ADMIN")
+
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",

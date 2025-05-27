@@ -1,6 +1,7 @@
 package com.java.bank_rest.entity;
 
 import com.java.bank_rest.util.Role;
+import com.java.bank_rest.util.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,5 +30,9 @@ public class User {
 
     @OneToMany(mappedBy = "cardUser", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Card> cards;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserStatus status;
 
 }

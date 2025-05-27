@@ -68,9 +68,8 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public void deleteCard(Long id) {
-        Card card = cardRepo.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Card not found"));
+    public void deleteCard(Long userId, Long cardId) {
+        Card card = loadCardForUser(userId, cardId);
 
         cardRepo.delete(card);
     }
@@ -123,6 +122,14 @@ public class CardServiceImpl implements CardService {
         transactionRepo.save(transaction);
 
         return new TransactionResponse("SUCCESS", "Перевод выполнен успешно");
+    }
+
+    @Override
+    public void requestBlock(Long userId, Long cardId) {
+        Card card = loadCardForUser(userId, cardId);
+        card.setStatus(CardStatus.PENDING_BLOCK);
+
+        cardRepo.save(card);
     }
 
     private Card loadCardForUser(Long userId, Long cardId) {

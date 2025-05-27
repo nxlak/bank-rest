@@ -42,11 +42,11 @@ public class CardController {
         return cardService.blockCard(id);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/delete/{userId}/{cardId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteCard(@PathVariable Long id) {
+    public ResponseEntity<?> deleteCard(@PathVariable Long userId, @PathVariable Long cardId) {
         try {
-            cardService.deleteCard(id);
+            cardService.deleteCard(userId, cardId);
             return ResponseEntity.noContent().build();
         } catch (EntityNotFoundException ex) {
             return ResponseEntity
@@ -83,4 +83,20 @@ public class CardController {
         return cardService.makeTransaction(userId, transactionRequest);
     }
 
+    @PatchMapping("/request/{userId}/{cardId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> requestBlock(@PathVariable Long userId, @PathVariable Long cardId) {
+        try {
+            cardService.requestBlock(userId, cardId);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Unexpected error"));
+        }
+    }
 }
