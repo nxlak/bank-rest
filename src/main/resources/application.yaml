@@ -1,32 +1,16 @@
 spring:
-  application:
-    name: bank-rest
-
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bank_rest}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:root}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      schema: public
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-      default_schema: public
-    open-in-view: false
-
+    url: jdbc:postgresql://localhost:5432/bank_rest
+    username: postgres
+    password: root
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.xml
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bank_rest}
-    user: ${SPRING_LIQUIBASE_USER:postgres}
-    password: ${SPRING_LIQUIBASE_PASSWORD:root}
-    default-schema: public
-
+  jpa:
+    hibernate:
+      ddl-auto: validate
 server:
-  port: ${SERVER_PORT:8080}
-
+  port: 8080
 logging:
   level:
     org.springframework.security: DEBUG
