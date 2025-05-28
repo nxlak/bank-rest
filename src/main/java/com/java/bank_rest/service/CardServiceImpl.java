@@ -13,10 +13,13 @@ import com.java.bank_rest.repository.UserRepo;
 import com.java.bank_rest.util.CardStatus;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -31,6 +34,8 @@ public class CardServiceImpl implements CardService {
     private final TransactionRepo transactionRepo;
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"cardsAll", "cardsByUser", "balance"}, allEntries = true)
     public CardResponse createCard(CardRequest cardRequest) {
         User user = userRepo.findById(cardRequest.getUserId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -47,6 +52,8 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"cardsAll", "cardsByUser", "balance"}, allEntries = true)
     public CardResponse updateStatus(Long id, String status) {
         Card card = cardRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Card not found"));
@@ -58,6 +65,8 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"cardsAll", "cardsByUser", "balance"}, allEntries = true)
     public CardResponse blockCard(Long id) {
         Card card = cardRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Card not found"));
@@ -68,6 +77,8 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"cardsAll", "cardsByUser", "balance"}, allEntries = true)
     public void deleteCard(Long userId, Long cardId) {
         Card card = loadCardForUser(userId, cardId);
 
@@ -75,12 +86,14 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Cacheable(value = "cardsAll", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<CardResponse> getAllCards(Pageable pageable) {
         return cardRepo.findAll(pageable)
                 .map(this::convertIntoDto);
     }
 
     @Override
+    @Cacheable(value = "cardsByUser", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<CardResponse> getCards(Long userId, Pageable pageable) {
         userRepo.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -89,12 +102,15 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Cacheable(value = "balance", key = "#userId + '-' + #cardId")
     public BigDecimal showBalance(Long userId, Long cardId) {
         Card card = loadCardForUser(userId, cardId);
         return card.getBalance();
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"cardsByUser", "balance"}, key = "#userId + '-' + #transactionRequest.fromId")
     public TransactionResponse makeTransaction(Long userId, TransactionRequest transactionRequest) {
         Card from = loadCardForUser(userId, transactionRequest.getFromId());
         Card to = cardRepo.findById(transactionRequest.getToId()).orElseThrow(() -> new EntityNotFoundException("Card not found"));
@@ -125,6 +141,8 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = {"cardsByUser", "balance"}, key = "#userId + '-' + #cardId")
     public void requestBlock(Long userId, Long cardId) {
         Card card = loadCardForUser(userId, cardId);
         card.setStatus(CardStatus.PENDING_BLOCK);

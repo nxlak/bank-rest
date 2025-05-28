@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGINT PRIMARY KEY DEFAULT nextval('users_seq'),
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL
+    role VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS card (

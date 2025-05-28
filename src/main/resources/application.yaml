@@ -9,6 +9,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  redis:
+    host: ${SPRING_REDIS_HOST:localhost}
+    port: ${SPRING_REDIS_PORT:6379}
+  cache:
+    type: redis
+
 server:
   port: 8080
 logging:
